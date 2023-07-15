@@ -1,0 +1,6 @@
+*.dll
+*.a
+*.lib
+*.exp
+*.def
+.sconsign.dblite

@@ -1,0 +1,259 @@
+import os
+import platform
+from collections import OrderedDict
+
+import SCons
+
+isStatic = ARGUMENTS.get("static", 0)
+outDir = "bin" + "/" + platform.system()
+
+
+objOutDir = os.path.join("cryptopp/objs", platform.system())
+baseCXXFlags = []
+
+
+def buildCXXFlag():
+    flags = [
+        "-O3",
+        "-DNDEBUG",
+    ]
+    if platform.system() == "Windows":
+        flags.append(["-D_WIN32_WINNT=0x0501"])
+    return flags
+
+
+baseCXXFlags = buildCXXFlag()
+
+
+def getObjsPostfix(env):
+    name = ""
+    if "mingw" in env["TOOLS"]:
+        name += "_mingw"
+    elif "msvc" in env["TOOLS"]:
+        name += "_msvc"
+    if platform.system() == "Windows":
+        name += "_win"
+    elif platform.system() == "Darwin":
+        name += "_dar"
+    elif platform.system() == "Linux":
+        name += "_lin"
+
+    name += ".o"
+
+    return name
+
+
+def buildObjects(env, objectDict):
+    objs = []
+    for file in objectDict:
+        objs.append(
+            env.Object(target=objOutDir + "/" + file[:-4] + getObjsPostfix(env),
+            source="cryptopp" + "/" + file,
+            CPPFLAGS=baseCXXFlags + objectDict[file],
+            )
+        )
+    if platform.system() == "Windows" and isStatic == 0:
+        objs.append(
+            env.RES(Target=objOutDir + "/" + "cryptopp.res.o", Source="cryptopp.rc")
+        )
+
+    return objs
+
+
+def buildLibName():
+    name = "cryptopp"
+    if isStatic != 0:
+        name += "_static"
+    return name
+
+
+env = Environment(TOOLS=["mingw"], LIBNAME=buildLibName())
+
+
+sources = OrderedDict(
+    {
+        "cryptlib.cpp": [],
+        "cpu.cpp": [],
+        "integer.cpp": [],
+        "3way.cpp": [],
+        "adler32.cpp": [],
+        "algebra.cpp": [],
+        "algparam.cpp": [],
+        "allocate.cpp": [],
+        "arc4.cpp": [],
+        "aria.cpp": [],
+        "aria_simd.cpp": ["-mssse3"],
+        "ariatab.cpp": [],
+        "asn.cpp": [],
+        "authenc.cpp": [],
+        "base32.cpp": [],
+        "base64.cpp": [],
+        "basecode.cpp": [],
+        "bfinit.cpp": [],
+        "blake2.cpp": [],
+        "blake2b_simd.cpp": ["-msse4.1"],
+        "blake2s_simd.cpp": ["-msse4.1"],
+        "blowfish.cpp": [],
+        "blumshub.cpp": [],
+        "camellia.cpp": [],
+        "cast.cpp": [],
+        "casts.cpp": [],
+        "cbcmac.cpp": [],
+        "ccm.cpp": [],
+        "chacha.cpp": [],
+        "chacha_avx.cpp": ["-mavx2"],
+        "chacha_simd.cpp": ["-msse2"],
+        "chachapoly.cpp": [],
+        "cham.cpp": [],
+        "cham_simd.cpp": ["-mssse3"],
+        "channels.cpp": [],
+        "cmac.cpp": [],
+        "crc.cpp": [],
+        "crc_simd.cpp": ["-msse4.2"],
+        "darn.cpp": [],
+        "default.cpp": [],
+        "des.cpp": [],
+        "dessp.cpp": [],
+        "dh.cpp": [],
+        "dh2.cpp": [],
+        "dll.cpp": [],
+        "donna_32.cpp": [],
+        "donna_64.cpp": [],
+        "donna_sse.cpp": ["-msse2"],
+        "dsa.cpp": [],
+        "eax.cpp": [],
+        "ec2n.cpp": [],
+        "eccrypto.cpp": [],
+        "ecp.cpp": [],
+        "elgamal.cpp": [],
+        "emsa2.cpp": [],
+        "eprecomp.cpp": [],
+        "esign.cpp": [],
+        "files.cpp": [],
+        "filters.cpp": [],
+        "fips140.cpp": [],
+        "fipstest.cpp": [],
+        "gcm.cpp": [],
+        "gcm_simd.cpp": ["-mssse3", "-mpclmul"],
+        "gf256.cpp": [],
+        "gf2_32.cpp": [],
+        "gf2n.cpp": [],
+        "gf2n_simd.cpp": ["-mpclmul"],
+        "gfpcrypt.cpp": [],
+        "gost.cpp": [],
+        "gzip.cpp": [],
+        "hc128.cpp": [],
+        "hc256.cpp": [],
+        "hex.cpp": [],
+        "hight.cpp": [],
+        "hmac.cpp": [],
+        "hrtimer.cpp": [],
+        "ida.cpp": [],
+        "idea.cpp": [],
+        "iterhash.cpp": [],
+        "kalyna.cpp": [],
+        "kalynatab.cpp": [],
+        "keccak.cpp": [],
+        "keccak_core.cpp": [],
+        "keccak_simd.cpp": ["-mssse3"],
+        "lea.cpp": [],
+        "lea_simd.cpp": ["-mssse3"],
+        "lsh256.cpp": [],
+        "lsh256_avx.cpp": ["-mavx2"],
+        "lsh256_sse.cpp": ["-mssse3"],
+        "lsh512.cpp": [],
+        "lsh512_avx.cpp": ["-mavx2"],
+        "lsh512_sse.cpp": ["-mssse3"],
+        "luc.cpp": [],
+        "mars.cpp": [],
+        "marss.cpp": [],
+        "md2.cpp": [],
+        "md4.cpp": [],
+        "md5.cpp": [],
+        "misc.cpp": [],
+        "modes.cpp": [],
+        "mqueue.cpp": [],
+        "mqv.cpp": [],
+        "nbtheory.cpp": [],
+        "oaep.cpp": [],
+        "osrng.cpp": [],
+        "padlkrng.cpp": [],
+        "panama.cpp": [],
+        "pkcspad.cpp": [],
+        "poly1305.cpp": [],
+        "polynomi.cpp": [],
+        "ppc_simd.cpp": [],
+        "primetab.cpp": [],
+        "pssr.cpp": [],
+        "pubkey.cpp": [],
+        "queue.cpp": [],
+        "rabbit.cpp": [],
+        "rabin.cpp": [],
+        "randpool.cpp": [],
+        "rc2.cpp": [],
+        "rc5.cpp": [],
+        "rc6.cpp": [],
+        "rdrand.cpp": [],
+        "rdtables.cpp": [],
+        "rijndael.cpp": [],
+        "rijndael_simd.cpp": ["-msse4.1", "-maes"],
+        "ripemd.cpp": [],
+        "rng.cpp": [],
+        "rsa.cpp": [],
+        "rw.cpp": [],
+        "safer.cpp": [],
+        "salsa.cpp": [],
+        "scrypt.cpp": [],
+        "seal.cpp": [],
+        "seed.cpp": [],
+        "serpent.cpp": [],
+        "sha.cpp": [],
+        "sha3.cpp": [],
+        "sha_simd.cpp": ["-msse4.2", "-msha"],
+        "shacal2.cpp": [],
+        "shacal2_simd.cpp": ["-msse4.2", "-msha"],
+        "shake.cpp": [],
+        "shark.cpp": [],
+        "sharkbox.cpp": [],
+        "simeck.cpp": [],
+        "simon.cpp": [],
+        "simon128_simd.cpp": ["-mssse3"],
+        "skipjack.cpp": [],
+        "sm3.cpp": [],
+        "sm4.cpp": [],
+        "sm4_simd.cpp": ["-mssse3", "-maes"],
+        "sosemanuk.cpp": [],
+        "speck.cpp": [],
+        "speck128_simd.cpp": ["-mssse3"],
+        "square.cpp": [],
+        "squaretb.cpp": [],
+        "sse_simd.cpp": ["-msse2"],
+        "strciphr.cpp": [],
+        "tea.cpp": [],
+        "tftables.cpp": [],
+        "threefish.cpp": [],
+        "tiger.cpp": [],
+        "tigertab.cpp": [],
+        "ttmac.cpp": [],
+        "tweetnacl.cpp": [],
+        "twofish.cpp": [],
+        "vmac.cpp": [],
+        "wake.cpp": [],
+        "whrlpool.cpp": [],
+        "xed25519.cpp": [],
+        "xtr.cpp": [],
+        "xtrcrypt.cpp": [],
+        "xts.cpp": [],
+        "zdeflate.cpp": [],
+        "zinflate.cpp": [],
+        "zlib.cpp": [],
+    }
+)
+
+
+compiledObjs = buildObjects(env, sources)
+
+if isStatic != 0:
+    env.StaticLibrary(os.path.join(outDir, env["LIBNAME"]), compiledObjs)
+else:
+    env.SharedLibrary(os.path.join(outDir, env["LIBNAME"]), compiledObjs)
