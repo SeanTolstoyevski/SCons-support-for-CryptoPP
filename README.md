@@ -9,13 +9,17 @@ You can use the relevant resources to install Python and SCons.
 
 ## building
 
-Open the terminal.
+Open the terminal and clone this repository. For example:
+
+`git clone --recursive https://github.com/SeanTolstoyevski/SCons-support-for-CryptoPP`
+
+this command pulls the latest version of CryptoPP.
 
 first option: shared library:
 
 `scons`
 
-third option: static library:
+second option: static library:
 
 `scons static=1`
 
