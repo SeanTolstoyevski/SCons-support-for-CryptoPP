@@ -2,9 +2,10 @@ import os
 import platform
 from collections import OrderedDict
 
-import SCons
-
 isStatic = ARGUMENTS.get("static", 0)
+isRelease = ARGUMENTS.get("release", 1)
+isDebug= ARGUMENTS.get("debug", 0)
+
 outDir = "bin" + "/" + platform.system()
 
 
@@ -12,17 +13,18 @@ objOutDir = os.path.join("cryptopp/objs", platform.system())
 baseCXXFlags = []
 
 
-def buildCXXFlag():
-    flags = [
-        "-O3",
-        "-DNDEBUG",
-    ]
-    if platform.system() == "Windows":
+def buildCXXFlag(env):
+    flags = []
+
+    if "mingw" in env["TOOLS"]:
         flags.append(["-D_WIN32_WINNT=0x0501"])
+        if isRelease != 0:
+            flags.append(["-O3", "-DNDEBUG"])
+        if isDebug != 0:
+            flags.append(["-g"])
     return flags
 
 
-baseCXXFlags = buildCXXFlag()
 
 
 def getObjsPostfix(env):
@@ -62,6 +64,8 @@ def buildObjects(env, objectDict):
 
 def buildLibName():
     name = "cryptopp"
+    if isDebug != 0:
+        name += "_debug"
     if isStatic != 0:
         name += "_static"
     return name
@@ -69,6 +73,8 @@ def buildLibName():
 
 env = Environment(TOOLS=["mingw"], LIBNAME=buildLibName())
 
+
+baseCXXFlags = buildCXXFlag(env)
 
 sources = OrderedDict(
     {
